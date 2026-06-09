@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="CourseScore"/>
+  <meta name="theme-color" content="#7c3aed"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <title>CourseScore</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg: #080818;
+      --bg2: #0d0d1a;
+      --bg3: #0a0a16;
+      --border: #1a1a3a;
+      --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --green: #00e676;
+      --yellow: #ffeb3b;
+      --orange: #ff9800;
+      --red: #f44336;
+      --text: #e0e0ff;
+      --muted: #555;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      overflow: hidden;
+    }
+
+    #app {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #0f0f2e, #1a0a2e);
+      padding: calc(var(--safe-top) + 14px) 20px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, #7c3aed33, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .header-label { font-size: 10px; color: var(--purple); letter-spacing: 4px; margin-bottom: 2px; }
+    .header-title { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+    .header-title span { color: var(--purple); }
+    .header-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: var(--muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: inherit;
+      font-family: 'DM Mono', monospace;
+      transition: color 0.2s;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: var(--purple-light);
+      border-bottom-color: var(--purple);
+    }
+
+    /* ── SCROLL CONTENT ── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px 16px calc(var(--safe-bot) + 16px);
+    }
+
+    /* ── SCORE CARD ── */
+    .score-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .score-ring-wrap { flex-shrink: 0; }
+    .score-info { flex: 1; min-width: 0; }
+    .score-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 4px; }
+    .score-amount { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+    .badge {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    /* ── INPUTS ── */
+    .field { margin-bottom: 12px; }
+    .field-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 6px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    input[type=number] {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 18px;
+      font-family: 'DM Mono', monospace;
+      padding: 14px 16px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    input[type=number]:focus { border-color: var(--purple); }
+    input[type=number]::placeholder { color: #333; }
+
+    /* ── TOGGLE ── */
+    .toggle-btn {
+      width: 100%;
+      border-radius: 12px;
+      padding: 13px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      font-family: 'DM Mono', monospace;
+      border: 1px solid;
+      margin-bottom: 12px;
+    }
+    .toggle-btn.on { background: #7c3aed22; border-color: var(--purple); color: var(--purple-light); }
+    .toggle-btn.off { background: var(--bg2); border-color: var(--border); color: var(--muted); }
+
+    /* ── BREAKDOWN ── */
+    .breakdown {
+      background: #0a0a18;
+      border: 1px solid #151530;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .breakdown-title { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 10px; }
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #111128;
+      font-size: 12px;
+    }
+    .breakdown-row:last-child { border-bottom: none; padding-top: 8px; }
+    .breakdown-row .lbl { color: var(--muted); }
+
+    /* ── SAVE BUTTON ── */
+    .save-btn {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 16px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      font-family: 'DM Mono', monospace;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+    }
+    .save-btn.active { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+    .save-btn.inactive { background: #1a1a2e; color: #333; cursor: not-allowed; }
+
+    /* ── GRID ── */
+    .grid-title { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 10px; }
+    .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; }
+    .grid-card {
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px solid;
+    }
+    .grid-card .gc-val { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+    .grid-card .gc-lbl { font-size: 10px; color: var(--muted); }
+
+    /* ── HISTORY ── */
+    .hist-title { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-bottom: 10px; }
+    .hist-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .hist-main { font-size: 13px; font-weight: 700; }
+    .hist-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .hist-score { font-size: 16px; font-weight: 800; }
+    .hist-delete {
+      background: none;
+      border: none;
+      color: #333;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+      margin-left: 8px;
+    }
+
+    /* ── SUMMARY ── */
+    .summary {
+      background: #0f0f22;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+      gap: 8px;
+    }
+    .summary-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--purple-light); }
+    .summary-lbl { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+    /* ── TIPS ── */
+    .tip {
+      background: var(--bg2);
+      border-left: 3px solid var(--purple);
+      border-radius: 0 12px 12px 0;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #aaa;
+    }
+    .tip strong { color: var(--text); }
+
+    /* ── EMPTY STATE ── */
+    .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-label">CITYGO OPTIMIZER</div>
+    <div class="header-title">Course<span>.</span>Score</div>
+    <div class="header-sub">Évry-Courcouronnes · Essence · 91</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('calc')" id="tab-calc">⚡ CALCULER</button>
+    <button class="tab" onclick="showTab('history')" id="tab-history">📋 HISTORIQUE</button>
+    <button class="tab" onclick="showTab('tips')" id="tab-tips">🎯 CONSEILS</button>
+  </div>
+
+  <!-- CALC TAB -->
+  <div class="content" id="pane-calc">
+    <div class="score-card">
+      <div class="score-ring-wrap">
+        <svg id="ring-svg" width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="34" fill="none" stroke="#1a1a2e" stroke-width="7"/>
+          <circle id="ring-arc" cx="44" cy="44" r="34" fill="none"
+            stroke="#555" stroke-width="7"
+            stroke-dasharray="0 213.6"
+            stroke-linecap="round"
+            transform="rotate(-90 44 44)"
+            style="transition: stroke-dasharray 0.5s cubic-bezier(.4,0,.2,1), stroke 0.3s"/>
+          <text id="ring-val" x="44" y="40" text-anchor="middle" fill="#555" font-size="14" font-weight="800" font-family="'DM Mono',monospace">—</text>
+          <text x="44" y="54" text-anchor="middle" fill="#444" font-size="8" font-family="'DM Mono',monospace">€/h net</text>
+        </svg>
+      </div>
+      <div class="score-info">
+        <div class="score-label">GAIN NET ESTIMÉ</div>
+        <div class="score-amount" id="gain-display" style="color:#444">—</div>
+        <div id="badge-display"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">PRIX CITYGO (€)</div>
+      <input type="number" id="inp-price" placeholder="ex: 17" inputmode="decimal" oninput="calc()"/>
+    </div>
+
+    <div class="field">
+      <div class="field-row">
+        <div>
+          <div class="field-label">COURSE (km)</div>
+          <input type="number" id="inp-course" placeholder="ex: 20" inputmode="decimal" oninput="calc()"/>
+        </div>
+        <div>
+          <div class="field-label">RETOUR VIDE (km)</div>
+          <input type="number" id="inp-retour" placeholder="= course" inputmode="decimal" oninput="calc()"/>
+        </div>
+      </div>
+    </div>
+
+    <button class="toggle-btn on" id="home-toggle" onclick="toggleHome()">
+      <span id="home-icon">🏠</span>
+      <span id="home-label">Départ depuis chez toi (Évry)</span>
+    </button>
+
+    <div class="breakdown" id="breakdown" style="display:none">
+      <div class="breakdown-title">DÉTAIL DU CALCUL</div>
+      <div class="breakdown-row"><span class="lbl">Recette brute</span><span id="bd-price" style="color:var(--text);font-weight:700"></span></div>
+      <div class="breakdown-row"><span class="lbl" id="bd-fuel-lbl">Carburant</span><span id="bd-fuel" style="color:var(--red);font-weight:700"></span></div>
+      <div class="breakdown-row"><span class="lbl">Usure véhicule</span><span id="bd-wear" style="color:var(--orange);font-weight:700"></span></div>
+      <div class="breakdown-row"><span class="lbl">Temps estimé</span><span id="bd-time" style="color:#888;font-weight:700"></span></div>
+      <div class="breakdown-row" style="padding-top:8px"><span class="lbl" style="color:#888;font-weight:700">Gain net</span><span id="bd-net" style="font-size:15px;font-weight:800"></span></div>
+    </div>
+
+    <button class="save-btn inactive" id="save-btn" onclick="saveRide()">+ ENREGISTRER</button>
+
+    <div class="grid-title">GRILLE DE DÉCISION</div>
+    <div class="grid-cards">
+      <div class="grid-card" style="background:#00e67611;border-color:#00e67633">
+        <div class="gc-val" style="color:var(--green)">&gt; 18 €/h</div>
+        <div class="gc-lbl">🟢 ACCEPTER</div>
+      </div>
+      <div class="grid-card" style="background:#ffeb3b11;border-color:#ffeb3b33">
+        <div class="gc-val" style="color:var(--yellow)">12–18 €/h</div>
+        <div class="gc-lbl">🟡 SI DOMICILE</div>
+      </div>
+      <div class="grid-card" style="background:#ff980011;border-color:#ff980033">
+        <div class="gc-val" style="color:var(--orange)">8–12 €/h</div>
+        <div class="gc-lbl">🟠 RETOUR UTILE</div>
+      </div>
+      <div class="grid-card" style="background:#f4433611;border-color:#f4433633">
+        <div class="gc-val" style="color:var(--red)">&lt; 8 €/h</div>
+        <div class="gc-lbl">🔴 REFUSER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div class="content" id="pane-history" style="display:none">
+    <div id="hist-list"></div>
+    <div id="hist-empty" class="empty">
+      <div class="empty-icon">📭</div>
+      Aucune course enregistrée aujourd'hui.<br/>Va dans Calculer et enregistre tes courses !
+    </div>
+    <div class="summary" id="summary" style="display:none">
+      <div><div class="summary-val" id="sum-total">0</div><div class="summary-lbl">GAIN NET</div></div>
+      <div><div class="summary-val" id="sum-count">0</div><div class="summary-lbl">COURSES</div></div>
+      <div><div class="summary-val" id="sum-avg">0</div><div class="summary-lbl">MOY. €/H</div></div>
+    </div>
+  </div>
+
+  <!-- TIPS TAB -->
+  <div class="content" id="pane-tips" style="display:none">
+    <div style="font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:14px">RÈGLES D'OR</div>
+
+    <div class="tip"><strong>🔑 Le €/heure, pas le prix brut</strong><br/>Un trajet à 13€ en 30 min vaut mieux qu'un 20€ en 1h30.</div>
+    <div class="tip"><strong>🏠 Départ domicile = bonus</strong><br/>Zéro km à vide avant la course. Priorité absolue aux départs depuis Évry.</div>
+    <div class="tip"><strong>✈️ Orly = zone de rebond</strong><br/>Wissous, Rungis, Athis-Mons → toujours près d'Orly. Facile d'enchaîner une course.</div>
+    <div class="tip"><strong>🚫 Paris centre = piège</strong><br/>Accepter seulement si prix &gt; 25€. Le retour à vide Paris→Évry coûte ~9€.</div>
+    <div class="tip"><strong>🌙 Nuit (&gt; 23h)</strong><br/>Favorise les courts trajets proches. Fatigue + retour seul = risque. Max 25 km.</div>
+    <div class="tip"><strong>🔄 Enchaîner les courses</strong><br/>Arrivée Gare de Lyon, Montparnasse, Orly = cherche immédiatement un retour vers le 91.</div>
+    <div class="tip"><strong>📍 Destinations favorables</strong><br/>Valenton, Wissous, Savigny, Linas, Rungis, Épinay-sur-Orge → retour Évry &lt; 20 min.</div>
+    <div class="tip"><strong>💡 Minimum viable</strong><br/>Court (&lt;20km) : minimum 12€ brut. Long (&gt;30km) : minimum 20€ brut.</div>
+
+    <div style="margin-top:24px;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:14px">PARAMÈTRES DE CALCUL</div>
+    <div class="breakdown">
+      <div class="breakdown-row"><span class="lbl">Carburant essence</span><span style="color:var(--text);font-weight:700">1,75 €/L</span></div>
+      <div class="breakdown-row"><span class="lbl">Consommation</span><span style="color:var(--text);font-weight:700">7,5 L/100km</span></div>
+      <div class="breakdown-row"><span class="lbl">Coût/km carburant</span><span style="color:var(--text);font-weight:700">0,131 €/km</span></div>
+      <div class="breakdown-row"><span class="lbl">Usure véhicule</span><span style="color:var(--text);font-weight:700">0,05 €/km</span></div>
+      <div class="breakdown-row"><span class="lbl">Vitesse moy. estimée</span><span style="color:var(--text);font-weight:700">50 km/h</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FUEL = 0.131, WEAR = 0.05;
+let fromHome = true;
+let history = JSON.parse(localStorage.getItem('cs_history') || '[]');
+
+function $(id) { return document.getElementById(id); }
+
+function scoreColor(s) {
+  if (s >= 18) return '#00e676';
+  if (s >= 12) return '#ffeb3b';
+  if (s >= 8)  return '#ff9800';
+  return '#f44336';
+}
+
+function badgeHTML(s) {
+  if (!isFinite(s) || s <= 0) return '';
+  const [bg, color, text] =
+    s >= 18 ? ['#00e67622','#00e676','🟢 ACCEPTER'] :
+    s >= 12 ? ['#ffeb3b22','#ffeb3b','🟡 SI DOMICILE'] :
+    s >= 8  ? ['#ff980022','#ff9800','🟠 RETOUR UTILE'] :
+              ['#f4433622','#f44336','🔴 REFUSER'];
+  return `<span class="badge" style="background:${bg};color:${color};border:1px solid ${color}44">${text}</span>`;
+}
+
+function calc() {
+  const p  = parseFloat($('inp-price').value) || 0;
+  const dc = parseFloat($('inp-course').value) || 0;
+  const dr = parseFloat($('inp-retour').value) || dc;
+  const total = dc + dr;
+
+  if (!p || !dc) {
+    $('ring-arc').setAttribute('stroke-dasharray', '0 213.6');
+    $('ring-arc').setAttribute('stroke', '#555');
+    $('ring-val').textContent = '—';
+    $('ring-val').setAttribute('fill', '#555');
+    $('gain-display').textContent = '—';
+    $('gain-display').style.color = '#444';
+    $('badge-display').innerHTML = '';
+    $('breakdown').style.display = 'none';
+    $('save-btn').className = 'save-btn inactive';
+    return;
+  }
+
+  const charges = total * (FUEL + WEAR);
+  const gainNet = p - charges;
+  const timeH = (total / 50) + (fromHome ? 0 : 0.17);
+  const scoreH = timeH > 0 ? gainNet / timeH : 0;
+  const circ = 2 * Math.PI * 34;
+  const pct = Math.min(Math.max(scoreH / 30, 0), 1);
+  const color = scoreColor(scoreH);
+
+  $('ring-arc').setAttribute('stroke-dasharray', `${pct * circ} ${circ}`);
+  $('ring-arc').setAttribute('stroke', color);
+  $('ring-val').textContent = scoreH > 0 ? scoreH.toFixed(1) : '—';
+  $('ring-val').setAttribute('fill', color);
+
+  $('gain-display').textContent = gainNet > 0 ? `${gainNet.toFixed(2)} €` : `${gainNet.toFixed(2)} €`;
+  $('gain-display').style.color = gainNet > 0 ? 'var(--text)' : 'var(--red)';
+  $('badge-display').innerHTML = badgeHTML(scoreH);
+
+  $('bd-price').textContent = `+${p.toFixed(2)} €`;
+  $('bd-fuel-lbl').textContent = `Carburant (${total} km)`;
+  $('bd-fuel').textContent = `-${(total * FUEL).toFixed(2)} €`;
+  $('bd-wear').textContent = `-${(total * WEAR).toFixed(2)} €`;
+  $('bd-time').textContent = `~${Math.round(timeH * 60)} min`;
+  $('bd-net').textContent = `${gainNet.toFixed(2)} €`;
+  $('bd-net').style.color = gainNet > 0 ? 'var(--green)' : 'var(--red)';
+  $('breakdown').style.display = 'block';
+  $('save-btn').className = 'save-btn active';
+}
+
+function toggleHome() {
+  fromHome = !fromHome;
+  $('home-toggle').className = `toggle-btn ${fromHome ? 'on' : 'off'}`;
+  $('home-icon').textContent = fromHome ? '🏠' : '📍';
+  $('home-label').textContent = fromHome ? 'Départ depuis chez toi (Évry)' : 'Départ hors domicile (+10 min)';
+  calc();
+}
+
+function saveRide() {
+  const p  = parseFloat($('inp-price').value) || 0;
+  const dc = parseFloat($('inp-course').value) || 0;
+  const dr = parseFloat($('inp-retour').value) || dc;
+  if (!p || !dc) return;
+
+  const total = dc + dr;
+  const charges = total * (FUEL + WEAR);
+  const gainNet = p - charges;
+  const timeH = (total / 50) + (fromHome ? 0 : 0.17);
+  const scoreH = timeH > 0 ? gainNet / timeH : 0;
+
+  const entry = {
+    id: Date.now(),
+    price: p, dc, dr,
+    gainNet: gainNet.toFixed(2),
+    scoreH: scoreH.toFixed(1),
+    time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    date: new Date().toLocaleDateString('fr-FR')
+  };
+
+  history.unshift(entry);
+  if (history.length > 30) history = history.slice(0, 30);
+  localStorage.setItem('cs_history', JSON.stringify(history));
+
+  // Reset
+  $('inp-price').value = '';
+  $('inp-course').value = '';
+  $('inp-retour').value = '';
+  calc();
+
+  // Flash
+  const btn = $('save-btn');
+  btn.textContent = '✓ ENREGISTRÉ !';
+  btn.style.background = 'linear-gradient(135deg, #00c853, #00e676)';
+  setTimeout(() => {
+    btn.textContent = '+ ENREGISTRER';
+    btn.className = 'save-btn inactive';
+  }, 1500);
+
+  renderHistory();
+}
+
+function deleteRide(id) {
+  history = history.filter(h => h.id !== id);
+  localStorage.setItem('cs_history', JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory() {
+  // Filter today
+  const today = new Date().toLocaleDateString('fr-FR');
+  const todayRides = history.filter(h => h.date === today);
+  const list = $('hist-list');
+  const empty = $('hist-empty');
+  const sum = $('summary');
+
+  if (todayRides.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    sum.style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  sum.style.display = 'grid';
+
+  list.innerHTML = todayRides.map(h => {
+    const s = parseFloat(h.scoreH);
+    const color = scoreColor(s);
+    return `
+      <div class="hist-item">
+        <div style="flex:1">
+          <div class="hist-main">${h.price} € · ${h.dc}+${h.dr} km</div>
+          <div class="hist-sub">${h.time} · net ${h.gainNet} €</div>
+        </div>
+        <div class="hist-score" style="color:${color}">${h.scoreH} €/h</div>
+        <button class="hist-delete" onclick="deleteRide(${h.id})">✕</button>
+      </div>`;
+  }).join('');
+
+  const totalNet = todayRides.reduce((s, h) => s + parseFloat(h.gainNet), 0);
+  const avgScore = todayRides.reduce((s, h) => s + parseFloat(h.scoreH), 0) / todayRides.length;
+  $('sum-total').textContent = `${totalNet.toFixed(0)}€`;
+  $('sum-count').textContent = todayRides.length;
+  $('sum-avg').textContent = `${avgScore.toFixed(0)}€/h`;
+}
+
+function showTab(tab) {
+  ['calc', 'history', 'tips'].forEach(t => {
+    $(`pane-${t}`).style.display = t === tab ? 'block' : 'none';
+    $(`tab-${t}`).className = `tab${t === tab ? ' active' : ''}`;
+  });
+  if (tab === 'history') renderHistory();
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
+// Init
+calc();
+</script>
+</body>
+</html>
